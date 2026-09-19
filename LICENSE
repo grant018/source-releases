@@ -1,0 +1,89 @@
+Source — End-User License Agreement
+Copyright © 2026 Grant. All rights reserved.
+
+Source ("the Software") is proprietary software, made available free of charge.
+By installing or using the Software, you agree to this Agreement. If you do not
+agree, do not install or use the Software.
+
+1. LICENSE GRANT
+
+   You are granted a personal, non-exclusive, non-transferable, revocable
+   license to install and use the Software, free of charge, on devices you own
+   or control.
+
+   "Personal" above means that this license is granted to you individually and
+   may not be transferred to anyone else. It does NOT limit the setting in which
+   you may use the Software: use at home, at work, or in a commercial setting is
+   permitted at no charge.
+
+2. RESTRICTIONS
+
+   You may not:
+     (a) sell, rent, lease, sublicense, or charge others for the Software;
+     (b) remove or alter any copyright, trademark, or license notice; or
+     (c) distribute modified copies of the Software.
+
+   Except as expressly permitted in Section 3, or to the extent applicable law
+   permits notwithstanding this restriction, you may not decompile,
+   disassemble, or reverse engineer the Software.
+
+3. OPEN-SOURCE COMPONENTS — YOUR RIGHTS ARE PRESERVED
+
+   The Software bundles third-party open-source components, each licensed under
+   its own terms. Those components are listed in THIRD-PARTY-LICENSES.md, which
+   is distributed with the Software.
+
+   Nothing in this Agreement limits, supersedes, or restricts any right granted
+   to you by the license of any bundled component. Where this Agreement and such
+   a license conflict, that license governs as to that component.
+
+   In particular, the bundled media engine (libmpv and its dependencies) is
+   licensed under the GNU Lesser General Public License (LGPL). With respect to
+   those components, you may:
+     (a) modify them, and replace the copies bundled with the Software with your
+         own modified versions; and
+     (b) reverse engineer and modify the Software to the extent necessary to
+         debug such modifications.
+
+   Corresponding source for the LGPL components, and the pinned upstream builds
+   they were produced from, are identified in THIRD-PARTY-LICENSES.md and are
+   available on request.
+
+4. NO CONTENT IS PROVIDED
+
+   The Software is a media player. It includes no media, channels, playlists, or
+   subscriptions, and it is not affiliated with, endorsed by, or connected to any
+   content provider. You are solely responsible for the sources you choose to
+   configure, for any credentials you supply, and for ensuring that your use
+   complies with applicable law and with the terms of any service you access.
+
+5. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+6. LIMITATION OF LIABILITY
+
+   TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE
+   AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OF OR OTHER DEALINGS IN THE SOFTWARE.
+
+7. UPDATES
+
+   The Software may check for, download, and install updates. What it contacts
+   over the network, and what it stores locally, is described in PRIVACY.md.
+
+8. TERMINATION
+
+   This license terminates automatically if you breach it. On termination you
+   must stop using the Software and remove it from your devices.
+
+9. SEVERABILITY
+
+   If any provision of this Agreement is held to be unenforceable or invalid,
+   that provision will be limited or removed to the minimum extent necessary,
+   and the remaining provisions will remain in full force and effect. This
+   Agreement does not limit any rights you have under mandatory consumer
+   protection law in your country of residence.
