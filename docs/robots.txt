@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sourceplayer.app/sitemap.xml

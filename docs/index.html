@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>source — the desktop media hub for IPTV, M3U, and local files</title>
+<meta name="description" content="source is a free desktop media player for power users: Xtream IPTV, M3U playlists, and local files in one keyboard-first window, with a real EPG guide, TMDB-rich library, casting, and reference-grade mpv playback (HEVC, lossless audio). Windows and macOS. No account, no telemetry." />
+<link rel="canonical" href="https://sourceplayer.app/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://sourceplayer.app/" />
+<meta property="og:site_name" content="source" />
+<meta property="og:title" content="source — the media hub the desktop forgot" />
+<meta property="og:description" content="Live TV with a real EPG, a TMDB-rich library, casting, and reference-grade mpv playback — one keyboard-first window for IPTV, M3U, and local files. Free for Windows and macOS." />
+<meta property="og:image" content="https://sourceplayer.app/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="source — the media hub the desktop forgot" />
+<meta name="twitter:description" content="Live TV with a real EPG, a TMDB-rich library, casting, and reference-grade mpv playback. Free for Windows and macOS." />
+<meta name="twitter:image" content="https://sourceplayer.app/og.png" />
+<meta name="theme-color" content="#0d0d0d" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="256x256" href="icon-256.png" />
+<link rel="apple-touch-icon" href="icon-256.png" />
+<link rel="stylesheet" href="fonts.css" />
+<style>
+/* ============================================================================
+   sourceplayer.app — built from the 2026-06-08 CDO mockup (docs/design/2026-06-08-website-v1.html in the app repo)
+   ----------------------------------------------------------------------------
+   North star: keep the sharp IDE frame; let the media content feel cinematic.
+   Every token below mirrors src/theme.css verbatim (OKLCH; vary hue, lock L/C).
+   Brand DNA: lowercase [source]; brackets = --accent, word = --text; the
+   accent retints per theme so the SAME mark reads in five colors. The board
+   loves "the logo in different colors in different situations" — the page
+   leans into it (hero auto-cycle + per-section accent contexts + live switch).
+   No build step. Fonts are self-hosted (fonts.css) — the page makes ONE outbound
+   request, to api.github.com, to resolve the current download links.
+   ============================================================================ */
+
+/* ── Obsidian leads (true black, Paper accent) — these are the :root defaults,
+      lifted byte-for-byte from theme.css's [data-theme="obsidian"] block. ── */
+:root {
+  --bg:           #0d0d0d;
+  --bg-2:         #141414;
+  --bg-3:         #1c1c1c;
+  --panel:        #0a0a0a;
+  --scrim:        13 13 13;
+
+  /* hairlines — defined ONCE, never per theme (theme.css rule) */
+  --line:         rgba(255,255,255,0.06);
+  --line-2:       rgba(255,255,255,0.10);
+  --line-3:       rgba(255,255,255,0.18);
+
+  /* text lightness stops locked (.88 / .62 / .40 / .28) */
+  --text:         oklch(0.88 0.000 0);
+  --text-dim:     oklch(0.62 0.000 0);
+  --text-faint:   oklch(0.40 0.000 0);
+  --text-fainter: oklch(0.28 0.000 0);
+
+  /* accent — Obsidian's documented Paper exception: L 0.92 / C 0.005 / h 90 */
+  --accent:       oklch(0.92 0.005 90);
+  --accent-soft:  oklch(0.92 0.005 90 / 0.12);
+  --accent-glow:  oklch(0.92 0.005 90 / 0.28);
+  /* relative-color derivations — the sanctioned idiom from theme-and-ui.md */
+  --accent-hi:    oklch(from var(--accent) calc(l + 0.05) c h);
+  --accent-strong:oklch(from var(--accent) calc(l - 0.04) c h / 0.22);
+  --accent-ink:   #0a0a0e;
+
+  --poster-bg:    linear-gradient(180deg, #1c1c1c, #111111);
+
+  --font-ui:   "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --sx-com:   var(--text-fainter);
+
+  /* spacing rhythm — a small, consistent vocabulary (4px base) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 72px; --sp-9: 112px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);   /* gentle decel, IDE-calm */
+  --ease-io:  cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ── The eight shipping themes, tokens lifted verbatim from src/theme.css
+      (Sept 2026). Applied to .app[data-theme] so the live footer switch retints
+      EVERYTHING — surfaces, text, hairlines stay locked, only hue moves. ── */
+.app[data-theme="navy"] {
+  --bg:#0b0e13; --bg-2:#0d1118; --bg-3:#0f141c; --panel:#0a0d12; --scrim:11 13 16;
+  --text:oklch(0.88 0.013 252); --text-dim:oklch(0.62 0.025 256);
+  --text-faint:oklch(0.40 0.024 256); --text-fainter:oklch(0.28 0.020 256);
+  --accent:oklch(0.78 0.14 260); --accent-soft:oklch(0.78 0.14 260/0.12); --accent-glow:oklch(0.78 0.14 260/0.28);
+  --poster-bg:linear-gradient(180deg,#1a2030,#0e1218);
+}
+.app[data-theme="obsidian"] {
+  --bg:#0d0d0d; --bg-2:#141414; --bg-3:#1c1c1c; --panel:#0a0a0a; --scrim:13 13 13;
+  --text:oklch(0.88 0.000 0); --text-dim:oklch(0.62 0.000 0);
+  --text-faint:oklch(0.40 0.000 0); --text-fainter:oklch(0.28 0.000 0);
+  --accent:oklch(0.92 0.005 90); --accent-soft:oklch(0.92 0.005 90/0.12); --accent-glow:oklch(0.92 0.005 90/0.28);
+  --poster-bg:linear-gradient(180deg,#1c1c1c,#111111);
+}
+.app[data-theme="play"] {
+  --bg:#1e1d2e; --bg-2:#232234; --bg-3:#2a293c; --panel:#181725; --scrim:30 29 46;
+  --text:oklch(0.88 0.025 280); --text-dim:oklch(0.62 0.030 280);
+  --text-faint:oklch(0.40 0.025 280); --text-fainter:oklch(0.28 0.020 280);
+  --accent:oklch(0.78 0.14 50); --accent-soft:oklch(0.78 0.14 50/0.12); --accent-glow:oklch(0.78 0.14 50/0.28);
+  --poster-bg:linear-gradient(180deg,#2a293c,#1a1928);
+}
+.app[data-theme="slate"] {
+  --bg:#16181c; --bg-2:#1c1e23; --bg-3:#22252b; --panel:#0f1013; --scrim:22 24 28;
+  --text:oklch(0.88 0.010 256); --text-dim:oklch(0.62 0.013 256);
+  --text-faint:oklch(0.40 0.012 256); --text-fainter:oklch(0.28 0.010 256);
+  --accent:oklch(0.78 0.14 130); --accent-soft:oklch(0.78 0.14 130/0.12); --accent-glow:oklch(0.78 0.14 130/0.28);
+  --poster-bg:linear-gradient(180deg,#23262d,#14161a);
+}
+.app[data-theme="platinum"] {
+  --bg:#0a0a0c; --bg-2:#101012; --bg-3:#16161a; --panel:#050506; --scrim:10 10 12;
+  --text:oklch(0.88 0.005 256); --text-dim:oklch(0.62 0.008 256);
+  --text-faint:oklch(0.40 0.008 256); --text-fainter:oklch(0.28 0.005 256);
+  --accent:oklch(0.78 0.08 240); --accent-soft:oklch(0.78 0.08 240/0.12); --accent-glow:oklch(0.78 0.08 240/0.28);
+  --poster-bg:linear-gradient(180deg,#16161a,#0a0a0c);
+}
+.app[data-theme="gargoyle"] {
+  --bg:#101413; --bg-2:#181c1b; --bg-3:#20231f; --panel:#0b0f0e; --scrim:16 20 19;
+  --text:oklch(0.88 0.012 152); --text-dim:oklch(0.62 0.014 152);
+  --text-faint:oklch(0.40 0.012 152); --text-fainter:oklch(0.28 0.010 152);
+  --accent:oklch(0.95 0.025 145); --accent-soft:oklch(0.95 0.025 145/0.12); --accent-glow:oklch(0.95 0.025 145/0.28);
+  --poster-bg:linear-gradient(180deg,#20231f,#111514);
+}
+.app[data-theme="berry"] {
+  --bg:#1c151f; --bg-2:#251c28; --bg-3:#322637; --panel:#161019; --scrim:28 21 31;
+  --text:oklch(0.88 0.016 80); --text-dim:oklch(0.62 0.018 75);
+  --text-faint:oklch(0.40 0.016 70); --text-fainter:oklch(0.28 0.013 65);
+  --accent:oklch(0.78 0.14 38); --accent-soft:oklch(0.78 0.14 38/0.12); --accent-glow:oklch(0.78 0.14 38/0.28);
+  --poster-bg:linear-gradient(180deg,#3a2c3f,#1c151f);
+}
+.app[data-theme="lagoon"] {
+  --bg:#0a1a23; --bg-2:#0c222a; --bg-3:#0f2d33; --panel:#06141c; --scrim:10 26 35;
+  --text:oklch(0.88 0.018 178); --text-dim:oklch(0.62 0.022 178);
+  --text-faint:oklch(0.40 0.018 178); --text-fainter:oklch(0.28 0.015 178);
+  --accent:oklch(0.78 0.14 100); --accent-soft:oklch(0.78 0.14 100/0.12); --accent-glow:oklch(0.78 0.14 100/0.28);
+  --poster-bg:linear-gradient(180deg,#123640,#0a1a23);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* a quiet top vignette so the true-black has depth */
+  background-image: radial-gradient(120% 80% at 50% -12%, rgba(255,255,255,0.04), transparent 56%);
+  background-attachment: fixed;
+  transition: background-color .35s var(--ease-out), color .35s var(--ease-out);
+}
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+svg { display: block; }
+
+.mono { font-family: var(--font-mono); }
+.wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 var(--sp-6); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ── the brand mark — brackets var(--accent), word var(--text); retints per theme ── */
+.logo { font-family: var(--font-mono); font-weight: 500; letter-spacing: -0.015em; line-height: 1; display: inline-flex; align-items: baseline; white-space: nowrap; }
+.logo .b { color: var(--accent); transition: color .35s var(--ease-out); }
+.logo .w { color: var(--text); transition: color .35s var(--ease-out); }
+
+/* ============================================================================
+   TITLEBAR / NAV — echoes the app window chrome (sharp IDE frame)
+   ============================================================================ */
+.titlebar {
+  position: sticky; top: 0; z-index: 50;
+  height: 48px;
+  display: flex; align-items: center; gap: 18px;
+  padding: 0 22px;
+  background: color-mix(in oklab, var(--panel) 84%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.tb-lights { display: flex; gap: 8px; }
+.tb-lights i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.tb-lights i:nth-child(1){ background:#ff5f57; } .tb-lights i:nth-child(2){ background:#febc2e; } .tb-lights i:nth-child(3){ background:#28c840; }
+.crumb { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--text-faint); }
+.crumb .sep { color: var(--text-fainter); }
+.tb-nav { margin-left: auto; display: flex; align-items: center; gap: 26px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); }
+.tb-nav a { transition: color .15s var(--ease-out); }
+.tb-nav a:hover { color: var(--text); }
+.tb-get {
+  padding: 8px 16px; border-radius: 6px;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; font-size: 12px; letter-spacing: 0.02em;
+  transition: box-shadow .18s var(--ease-out), transform .18s var(--ease-out), background-color .35s var(--ease-out);
+}
+.tb-get:hover { background: var(--accent-hi); box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent-glow); transform: translateY(-1px); }
+
+/* ============================================================================
+   HERO
+   ============================================================================ */
+.hero { padding: var(--sp-9) 0 var(--sp-7); text-align: center; position: relative; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.05em;
+  color: var(--text-faint); margin-bottom: var(--sp-6);
+  display: inline-flex; align-items: center; gap: 9px;
+  border: 1px solid var(--line-2); border-radius: 999px; padding: 7px 16px;
+  background: color-mix(in oklab, var(--bg-2) 70%, transparent);
+}
+.eyebrow .b { color: var(--accent); transition: color .35s var(--ease-out); }
+.eyebrow .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.hero h1 {
+  font-size: clamp(40px, 6.4vw, 80px);
+  line-height: 1.01; letter-spacing: -0.028em; font-weight: 600;
+  margin: 0 auto var(--sp-5); max-width: 17ch;
+  text-wrap: balance;
+}
+.hero h1 .dim { color: var(--text-dim); }
+.hero h1 .em { color: var(--text); }
+.hero p.lede {
+  font-size: clamp(16px, 1.5vw, 19.5px); color: var(--text-dim);
+  max-width: 60ch; margin: 0 auto var(--sp-7); line-height: 1.62;
+  text-wrap: pretty;
+}
+.hero p.lede b { color: var(--text); font-weight: 500; }
+.hero p.lede .acc { color: var(--accent); font-weight: 500; transition: color .35s var(--ease-out); }
+
+/* download cluster */
+.downloads { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: var(--sp-4); }
+.dl {
+  display: flex; align-items: center; gap: 13px;
+  padding: 15px 22px 15px 18px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--bg-2);
+  transition: border-color .18s var(--ease-out), transform .18s var(--ease-out), background-color .18s var(--ease-out), box-shadow .18s var(--ease-out);
+  min-width: 240px; text-align: left;
+}
+.dl:hover { border-color: var(--line-3); transform: translateY(-2px); }
+.dl.primary { background: var(--accent); border-color: var(--accent); }
+.dl.primary:hover { background: var(--accent-hi); box-shadow: 0 14px 36px -12px var(--accent-glow); }
+.dl .os-ico { width: 26px; height: 26px; flex: none; color: var(--text); }
+.dl.primary .os-ico { color: var(--accent-ink); }
+.dl .dl-txt { display: flex; flex-direction: column; line-height: 1.25; }
+.dl .dl-k { font-size: 11px; font-family: var(--font-mono); color: var(--text-faint); letter-spacing: 0.03em; }
+.dl .dl-v { font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.dl.primary .dl-k { color: color-mix(in oklab, var(--accent-ink) 62%, transparent); }
+.dl.primary .dl-v { color: var(--accent-ink); }
+.dl .badge {
+  margin-left: auto; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-faint);
+  border: 1px solid var(--line-2); border-radius: 4px; padding: 3px 6px;
+}
+.dl.your-os .badge { color: var(--accent); border-color: var(--accent-strong); }
+.dl.primary .badge { color: var(--accent-ink); border-color: color-mix(in oklab, var(--accent-ink) 30%, transparent); }
+
+.dl-meta {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-faint);
+  letter-spacing: 0.02em; display: inline-flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center;
+}
+.dl-meta .dot { color: var(--text-fainter); }
+.dl-meta a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 2px; }
+.dl-meta a:hover { color: var(--text); }
+
+/* ============================================================================
+   APP WINDOW VIGNETTE — composed recreation of the library view (no licensed art)
+   ============================================================================ */
+.stage { padding: var(--sp-7) 0 var(--sp-9); }
+.screenshot {
+  width: 100%; max-width: 1010px; margin: 0 auto;
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+  box-shadow: 0 54px 130px -42px rgba(0,0,0,0.92), 0 0 0 1px rgba(255,255,255,0.02);
+}
+/* minmax(0,1fr) on the (single, implicit) column: without it the column is `auto`
+   and grows to the content's max-content width, so at phone widths the mock ran
+   ~100px past its frame. */
+.win { display: grid; grid-template-rows: 34px 1fr 26px; grid-template-columns: minmax(0, 1fr); height: 584px; font-size: 14px; }
+.win-tb { display: flex; align-items: center; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); gap: 14px; }
+.win-tb .crumb { font-size: 11px; }
+.win-tb .tb-r { margin-left: auto; display: flex; align-items: center; gap: 8px; color: var(--text-fainter); }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.win-body { display: grid; grid-template-columns: 46px 212px 1fr; min-height: 0; }
+.rail { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 9px 0; gap: 3px; }
+.rail .ico { width: 34px; height: 34px; display: grid; place-items: center; color: var(--text-faint); border-radius: 8px; position: relative; }
+.rail .ico.active { color: var(--text); }
+.rail .ico.active::before { content:""; position:absolute; left:-5px; top:8px; bottom:8px; width:2px; border-radius:2px; background: var(--accent); }
+.rail .ico svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.rail .sp { flex: 1; }
+
+.explorer { background: var(--bg-2); border-right: 1px solid var(--line); padding: 11px 0; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; min-height: 0; }
+.ex-head { display:flex; align-items:center; justify-content:space-between; padding: 0 10px 0 14px; font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color: var(--text-faint); margin-bottom: 12px; }
+.ex-head .plus { color: var(--text-fainter); }
+.ex-tree { display: flex; flex-direction: column; }
+.ex-row { display:flex; align-items:center; gap:7px; padding: 4px 14px; color: var(--text-dim); position: relative; }
+.ex-row .tw { color: var(--text-fainter); width: 9px; }
+.ex-row .ct { margin-left: auto; color: var(--text-fainter); font-size: 10.5px; }
+.ex-row.child { padding-left: 30px; }
+.ex-row.active { background: var(--accent-soft); color: var(--text); }
+.ex-row.active::before { content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background: var(--accent); }
+.ex-row .dot-f { width: 7px; height: 7px; border-radius: 2px; background: var(--text-fainter); }
+.ex-row.active .dot-f { background: var(--accent); }
+.ex-foot { margin-top:auto; border-top: 1px solid var(--line); padding: 9px 14px; font-size: 9.5px; color: var(--text-fainter); letter-spacing: 0.06em; display:flex; gap: 16px; }
+.ex-foot b { color: var(--text-dim); font-weight: 500; }
+
+.editor { display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
+.tabs { display: flex; align-items: stretch; background: var(--panel); border-bottom: 1px solid var(--line); height: 34px; font-family: var(--font-mono); font-size: 11.5px; }
+.tab { display:flex; align-items:center; gap:7px; padding: 0 16px; color: var(--text-faint); border-right: 1px solid var(--line); position: relative; }
+.tab.active { color: var(--text); background: var(--bg); }
+.tab.active::before { content:""; position:absolute; left:0; right:0; top:0; height:2px; background: var(--accent); }
+.tab .d { width:6px; height:6px; border-radius:50%; background: var(--text-fainter); }
+.tab.active .d { background: var(--accent); }
+.lib { display: grid; grid-template-columns: 202px 1fr; min-height: 0; flex: 1; }
+.cats { border-right: 1px solid var(--line); padding: 14px 0; font-family: var(--font-mono); font-size: 11.5px; overflow: hidden; }
+.cats .htxt { padding: 0 14px; color: var(--text-faint); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.cats .total { padding: 0 14px 12px; color: var(--text-dim); }
+.cats .total b { color: var(--accent); font-weight: 600; }
+.cat { display:flex; align-items:center; padding: 5px 14px; color: var(--text-dim); position: relative; }
+.cat .n { color: var(--text-fainter); width: 18px; font-size: 10px; }
+.cat .c { margin-left: auto; color: var(--text-fainter); font-size: 10px; }
+.cat.active { background: var(--accent-soft); color: var(--text); }
+.cat.active::before { content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background: var(--accent); }
+.grid-pane { display: flex; flex-direction: column; min-width: 0; }
+.grid-head { display:flex; align-items:center; gap:10px; padding: 12px 18px; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); border-bottom: 1px solid var(--line); }
+.grid-head .here { color: var(--text); } .grid-head .muted { color: var(--text-fainter); }
+.grid-head .sort { margin-left:auto; color: var(--text-dim); display:flex; align-items:center; gap:6px; }
+.posters { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; padding: 18px; overflow: hidden; }
+.poster .art { aspect-ratio: 2/3; border-radius: 6px; border: 1px solid var(--line-2); position: relative; overflow: hidden; container-type: inline-size; background:#0a0a0c; }
+.poster .art .scene { position:absolute; inset:0; }
+.poster .art .scrim-g { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.10) 0%, transparent 26%, transparent 48%, rgba(0,0,0,0.5) 76%, rgba(0,0,0,0.9) 100%); }
+.poster .art .grain { position:absolute; inset:0; opacity:0.4; mix-blend-mode:overlay; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 2px); pointer-events:none; }
+.poster .art .vig { position:absolute; inset:0; box-shadow: inset 0 0 28px 5px rgba(0,0,0,0.42); }
+.poster .ptitle { position:absolute; left:0; right:0; bottom:0; padding: 0 7px 8px; text-align:center; }
+.poster .ptitle .tt { color:#fff; line-height:0.9; letter-spacing:0.01em; text-transform:uppercase; text-shadow:0 1px 5px rgba(0,0,0,0.55); }
+.poster .ptitle .tt.serif { text-transform:none; letter-spacing:0; line-height:0.96; }
+.poster .ptitle .bill { font-family: var(--font-mono); font-size: 4.4cqw; letter-spacing:0.12em; color: rgba(255,255,255,0.62); text-transform:uppercase; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.poster .q { position:absolute; top:6px; left:6px; font-family: var(--font-mono); font-size: 8.5px; padding: 2px 5px; border-radius: 4px; background: rgba(0,0,0,0.45); border: 1px solid var(--line-2); color: var(--text-dim); backdrop-filter: blur(3px); }
+.poster .r { position:absolute; top:6px; right:6px; font-family: var(--font-mono); font-size: 8.5px; padding: 2px 5px; border-radius: 4px; background: rgba(0,0,0,0.45); border: 1px solid var(--line-2); color: #d8c089; backdrop-filter: blur(3px); display:flex; align-items:center; gap:3px; }
+.poster .meta { height: 32px; padding-top: 8px; }
+.poster .t { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.poster .sub { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.win-sb { display:flex; align-items:stretch; background: var(--panel); border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+.sb-seg { display:flex; align-items:center; gap:6px; padding: 0 12px; letter-spacing: 0.04em; }
+.sb-seg.muted { color: var(--text-faint); }
+.sb-seg.accent { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.sb-sp { flex: 1; }
+
+.shot-cap { text-align:center; font-family: var(--font-mono); font-size: 12px; color: var(--text-fainter); margin-top: 22px; letter-spacing: 0.02em; }
+.shot-cap b { color: var(--text-faint); font-weight: 500; }
+
+/* ============================================================================
+   THE VOID WE FILL — positioning comparison strip
+   ============================================================================ */
+.void { border-top: 1px solid var(--line); padding: var(--sp-8) 0; }
+.sec-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--text-faint); letter-spacing: 0.05em; text-align: center; margin-bottom: var(--sp-3); }
+.sec-eyebrow .b { color: var(--accent); transition: color .35s var(--ease-out); }
+.sec-title { font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -0.022em; font-weight: 600; text-align: center; margin: 0 auto var(--sp-4); max-width: 22ch; text-wrap: balance; }
+.sec-sub { color: var(--text-dim); text-align: center; max-width: 58ch; margin: 0 auto var(--sp-7); line-height: 1.6; font-size: 16px; text-wrap: pretty; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 940px; margin: 0 auto; }
+.col { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.col .col-h { padding: 16px 22px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--line); display:flex; align-items:center; gap:10px; }
+.col.them { background: var(--bg-2); }
+.col.them .col-h { color: var(--text-faint); }
+.col.us { background: linear-gradient(180deg, color-mix(in oklab, var(--accent-soft) 70%, transparent), var(--bg-2) 60%); border-color: var(--accent-strong); }
+.col.us .col-h { color: var(--text); }
+.col.us .col-h .dotp { width:7px; height:7px; border-radius:50%; background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.col ul { list-style: none; margin: 0; padding: 8px 0; }
+.col li { display:flex; gap: 12px; align-items:flex-start; padding: 12px 22px; font-size: 14px; line-height: 1.5; color: var(--text-dim); border-top: 1px solid var(--line); }
+.col li:first-child { border-top: 0; }
+.col li .mk { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.col.them li .mk { color: var(--text-fainter); }
+.col.us li .mk { color: var(--accent); }
+.col.us li { color: var(--text); }
+.col li b { color: var(--text); font-weight: 600; }
+
+/* ============================================================================
+   FEATURE GRID
+   ============================================================================ */
+.features { border-top: 1px solid var(--line); padding: var(--sp-8) 0; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.feat {
+  background: var(--bg); padding: 30px 26px 34px;
+  display: flex; flex-direction: column; gap: 14px;
+  transition: background-color .2s var(--ease-out);
+}
+.feat:hover { background: var(--bg-2); }
+.feat .fi { width: 26px; height: 26px; color: var(--accent); stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: color .35s var(--ease-out); }
+.feat h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.feat p { margin: 0; font-size: 13.5px; color: var(--text-dim); line-height: 1.55; }
+.feat .tag { margin-top: auto; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.04em; padding-top: 8px; }
+.feat .tag .acc { color: var(--accent); transition: color .35s var(--ease-out); }
+
+/* ============================================================================
+   CODEC / PLAYBACK STRIP — cinematic-within-the-frame
+   ============================================================================ */
+.codec { border-top: 1px solid var(--line); padding: var(--sp-8) 0; position: relative; overflow: hidden; }
+.codec .glow { position:absolute; inset:0; pointer-events:none; background: radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%); opacity: 0.7; }
+.codec-inner { position: relative; }
+.codec-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 880px; margin: var(--sp-6) auto 0; }
+.chip { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); border: 1px solid var(--line-2); border-radius: 8px; padding: 11px 16px; background: var(--bg-2); display:flex; align-items:center; gap:9px; transition: border-color .18s var(--ease-out), color .18s var(--ease-out), transform .18s var(--ease-out); }
+.chip:hover { border-color: var(--accent-strong); color: var(--text); transform: translateY(-2px); }
+.chip .ck { width:5px; height:5px; border-radius:50%; background: var(--accent); box-shadow: 0 0 7px var(--accent-glow); flex:none; }
+.codec-note { text-align:center; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-fainter); margin-top: var(--sp-5); letter-spacing: 0.02em; }
+
+/* ============================================================================
+   CLOSING / CTA
+   ============================================================================ */
+.close { border-top: 1px solid var(--line); padding: var(--sp-8) 0 var(--sp-8); text-align: center; }
+.close h2 { font-size: clamp(28px, 3.6vw, 42px); letter-spacing: -0.025em; font-weight: 600; margin: 0 auto 18px; max-width: 18ch; text-wrap: balance; }
+.close p { color: var(--text-dim); max-width: 52ch; margin: 0 auto 36px; font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+.close .note { font-family: var(--font-mono); font-size: 12px; color: var(--text-fainter); margin-top: 30px; max-width: 62ch; margin-left:auto; margin-right:auto; line-height: 1.7; border-top: 1px solid var(--line); padding-top: 26px; }
+.close .note b { color: var(--text-faint); font-weight: 500; }
+
+/* ============================================================================
+   STATUSBAR FOOTER — echoes app statusbar, holds the LIVE theme switch
+   ============================================================================ */
+.footer {
+  margin-top: auto;
+  display: flex; align-items: center; gap: 0;
+  height: 30px;
+  background: var(--panel); border-top: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim);
+  position: sticky; bottom: 0; z-index: 40;
+}
+.footer .seg { display:flex; align-items:center; gap:7px; padding: 0 13px; letter-spacing: 0.04em; height: 100%; }
+.footer .seg.brand { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.footer .seg.muted { color: var(--text-faint); }
+.footer .seg a:hover { color: var(--text); }
+.footer a.seg:hover { color: var(--text); }
+.footer .sp { flex: 1; }
+.footer .dot-s { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.theme-switch { display:flex; align-items:center; gap: 2px; padding: 0 6px; }
+.theme-switch .tlabel { color: var(--text-fainter); margin-right: 6px; letter-spacing: 0.08em; }
+.sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; transition: border-color .15s var(--ease-out), transform .15s var(--ease-out); }
+.sw:hover { transform: scale(1.12); }
+.sw i { width: 8px; height: 8px; border-radius: 50%; display:block; }
+.sw[data-sw="navy"]     i { background: oklch(0.78 0.14 260); }
+.sw[data-sw="obsidian"] i { background: oklch(0.92 0.005 90); }
+.sw[data-sw="play"]     i { background: oklch(0.78 0.14 50); }
+.sw[data-sw="slate"]    i { background: oklch(0.78 0.14 130); }
+.sw[data-sw="platinum"] i { background: oklch(0.78 0.08 240); }
+.sw[data-sw="gargoyle"] i { background: oklch(0.95 0.025 145); }
+.sw[data-sw="berry"]    i { background: oklch(0.78 0.14 38); }
+.sw[data-sw="lagoon"]   i { background: oklch(0.78 0.14 100); }
+.sw.on { border-color: var(--text-dim); }
+
+/* ============================================================================
+   OG-IMAGE MODE — ?og=1 renders just the hero for the 1200x630 social card
+   ============================================================================ */
+html.og .titlebar, html.og .footer, html.og .stage, html.og .void, html.og .features, html.og .codec, html.og .close { display: none; }
+html.og .hero { padding: 44px 0 0; }
+html.og .hero h1 { font-size: 72px; }
+html.og .hero p.lede { font-size: 19px; margin-bottom: 36px; }
+html.og .reveal { opacity: 1; transform: none; }
+html.og, html.og body { overflow: hidden; }
+
+/* ============================================================================
+   MOTION — quiet entrance reveals (transform/opacity only; perf-safe)
+   ============================================================================ */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); will-change: opacity, transform; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  * { animation: none !important; }
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 900px) {
+  .wrap { padding: 0 20px; }
+  .tb-nav { gap: 16px; }
+  .hide-sm { display: none !important; }
+  .feat-grid { grid-template-columns: repeat(2, 1fr); }
+  .compare { grid-template-columns: 1fr; }
+  .win { height: 470px; }
+  .lib { grid-template-columns: 150px 1fr; }
+  .posters { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .footer { flex-wrap: wrap; height: auto; }
+}
+@media (max-width: 560px) {
+  .titlebar .crumb { display: none; }
+  /* minmax(0,1fr): a bare 1fr is minmax(auto,1fr) and refuses to shrink below the
+     tab row's natural width, which pushed the mock 100px past its frame at 390px. */
+  .win-body { grid-template-columns: 46px minmax(0, 1fr); }
+  .explorer { display: none; }
+  .lib { grid-template-columns: minmax(0, 1fr); }
+  .cats { display: none; }
+  .tabs, .grid-head { overflow: hidden; }
+  .tab:nth-child(3), .win-tb .tb-r, .win-tb .crumb, .grid-head .muted:first-child, .win-sb .sb-seg.muted { display: none; }
+  .win { height: 440px; }
+  .posters { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .feat-grid { grid-template-columns: 1fr; }
+  .dl { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app" data-theme="obsidian" data-screen-label="download">
+
+  <!-- ===================== TITLEBAR / NAV ===================== -->
+  <header class="titlebar">
+    <div class="tb-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="crumb">
+      <span class="logo" style="font-size:13px"><span class="b">[</span><span class="w">s</span><span class="b">]</span></span>
+      <span class="sep">›</span><span>home</span>
+    </div>
+    <nav class="tb-nav" aria-label="primary">
+      <a href="#features" class="hide-sm">features</a>
+      <a href="#why" class="hide-sm">why source</a>
+      <a href="https://github.com/grant018/source-releases/releases" target="_blank" rel="noopener">releases</a>
+      <a href="#download" class="tb-get">Download</a>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero wrap" id="download">
+    <div class="eyebrow mono"><span class="pip" aria-hidden="true"></span> the desktop equivalent of <span class="b">TiviMate</span> — and more</div>
+    <h1>
+      <span class="logo" style="font-size:inherit;font-weight:600" id="heroLogo"><span class="b">[</span><span class="w">source</span><span class="b">]</span></span><br>
+      <span class="dim">the media hub the desktop</span> <span class="em">forgot.</span>
+    </h1>
+    <p class="lede">One fast, keyboard-first window for <b>live TV, movies, shows, and local files</b> — unifying <b>Xtream IPTV</b>, <b>M3U / M3U8</b> playlists, and your own library under a single, IDE-styled roof. <span class="acc">Reference-grade mpv playback</span> handles the codecs other players stall on. Built for the power user, not dumbed down for everyone else.</p>
+
+    <div class="downloads">
+      <a class="dl primary" id="dl-mac" href="https://github.com/grant018/source-releases/releases/latest" data-dl="mac">
+        <svg class="os-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.36 12.78c-.02-2.05 1.67-3.03 1.75-3.08-.95-1.4-2.44-1.59-2.97-1.61-1.26-.13-2.47.74-3.11.74-.64 0-1.63-.72-2.69-.7-1.38.02-2.66.8-3.37 2.04-1.44 2.5-.37 6.2 1.03 8.23.68.99 1.5 2.1 2.56 2.06 1.03-.04 1.42-.66 2.66-.66 1.24 0 1.59.66 2.68.64 1.11-.02 1.81-1.01 2.49-2 .78-1.15 1.1-2.27 1.12-2.33-.02-.01-2.15-.83-2.18-3.27zM14.3 6.84c.56-.68.94-1.62.84-2.56-.81.03-1.79.54-2.37 1.22-.52.6-.98 1.56-.86 2.48.9.07 1.83-.46 2.39-1.14z"/></svg>
+        <span class="dl-txt"><span class="dl-k">Download for</span><span class="dl-v">macOS</span></span>
+        <span class="badge">Apple Silicon</span>
+      </a>
+      <a class="dl" id="dl-win" href="https://github.com/grant018/source-releases/releases/latest" data-dl="win">
+        <svg class="os-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1l7.6-1.04v7.34H3zM11.42 3.94L21 2.6v8.8h-9.58zM3 12.6h7.6v7.34L3 18.9zM11.42 12.6H21v8.8l-9.58-1.34z"/></svg>
+        <span class="dl-txt"><span class="dl-k">Download for</span><span class="dl-v">Windows</span></span>
+        <span class="badge">10 / 11 · x64</span>
+      </a>
+    </div>
+    <div class="dl-meta mono">
+      <span id="dl-version">latest release</span><span class="dot">·</span>
+      <span>macOS 12+ (Apple Silicon) / Windows 10+</span><span class="dot">·</span>
+      <span>free · no account · no telemetry</span><span class="dot">·</span>
+      <a href="https://github.com/grant018/source-releases/releases" target="_blank" rel="noopener">all releases</a>
+    </div>
+  </section>
+
+  <!-- ===================== APP WINDOW VIGNETTE ===================== -->
+  <section class="stage wrap reveal">
+    <div class="screenshot">
+      <div class="win">
+        <div class="win-tb">
+          <div class="tb-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+          <span class="logo" style="font-size:11px"><span class="b">[</span><span class="w">s</span><span class="b">]</span></span>
+          <span class="crumb"><span class="sep">›</span> library <span class="sep">›</span> <span style="color:var(--text-dim)">movies.toml</span></span>
+          <div class="tb-r"><span class="pulse"></span> READY <span style="color:var(--text-fainter)">· synced 2m ago</span></div>
+        </div>
+        <div class="win-body">
+          <nav class="rail" aria-hidden="true">
+            <div class="ico active" title="Files"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></div>
+            <div class="ico" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+            <div class="ico" title="Live TV"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M8 2l4 4 4-4"/></svg></div>
+            <div class="ico" title="Player"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></div>
+            <div class="sp"></div>
+            <div class="ico" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.07-.33.1-.66.1-1z"/></svg></div>
+          </nav>
+          <aside class="explorer" aria-hidden="true">
+            <div class="ex-head"><span>explorer</span><span class="plus">+</span></div>
+            <div class="ex-tree">
+              <div class="ex-row"><span class="tw">▾</span><span class="dot-f"></span> living room <span class="ct">xtream</span></div>
+              <div class="ex-row child active"><span class="dot-f"></span> movies.toml <span class="ct">1.2k</span></div>
+              <div class="ex-row child"><span class="dot-f"></span> shows.toml <span class="ct">412</span></div>
+              <div class="ex-row child"><span class="dot-f"></span> live.toml <span class="ct">980</span></div>
+              <div class="ex-row"><span class="tw">▸</span><span class="dot-f"></span> backup m3u <span class="ct">m3u</span></div>
+              <div class="ex-row"><span class="tw">▸</span><span class="dot-f"></span> local films <span class="ct">disk</span></div>
+              <div class="ex-row"><span class="tw">▸</span><span class="dot-f"></span> favorites <span class="ct">24</span></div>
+            </div>
+            <div class="ex-foot"><span><b>3</b> sources</span><span><b>2.6k</b> titles</span></div>
+          </aside>
+          <div class="editor">
+            <div class="tabs">
+              <div class="tab active"><span class="d"></span> movies.toml</div>
+              <div class="tab"><span class="d"></span> shows.toml</div>
+              <div class="tab"><span class="d"></span> live.toml</div>
+            </div>
+            <div class="lib">
+              <div class="cats" aria-hidden="true">
+                <div class="htxt">// categories</div>
+                <div class="total">total = <b>1,284</b></div>
+                <div class="cat active"><span class="n">00</span> All Movies <span class="c">1284</span></div>
+                <div class="cat"><span class="n">01</span> Trending <span class="c">84</span></div>
+                <div class="cat"><span class="n">02</span> 4K · UHD <span class="c">511</span></div>
+                <div class="cat"><span class="n">03</span> Action <span class="c">203</span></div>
+                <div class="cat"><span class="n">04</span> Sci-Fi <span class="c">142</span></div>
+                <div class="cat"><span class="n">05</span> Thriller <span class="c">187</span></div>
+                <div class="cat"><span class="n">06</span> Drama <span class="c">264</span></div>
+                <div class="cat"><span class="n">07</span> Comedy <span class="c">238</span></div>
+              </div>
+              <div class="grid-pane">
+                <div class="grid-head">
+                  <span class="muted">library / movies /</span> <span class="here">All Movies</span> <span class="muted">1284 titles</span>
+                  <span class="sort">⇅ sort: a–z</span>
+                </div>
+                <div class="posters" id="posterGrid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="win-sb">
+          <div class="sb-seg accent">READY</div>
+          <div class="sb-seg">living room</div>
+          <div class="sb-seg muted">movies.toml</div>
+          <div class="sb-seg muted">xtream</div>
+          <div class="sb-sp"></div>
+          <div class="sb-seg muted">cache 84%</div>
+          <div class="sb-seg">⌘K palette</div>
+          <div class="sb-seg muted" id="sbTheme">obsidian</div>
+        </div>
+      </div>
+    </div>
+    <p class="shot-cap">the library on the <b>Obsidian</b> theme · composed mock — <b>switch themes in the footer</b> to retint the whole page, logo and all</p>
+  </section>
+
+  <!-- ===================== THE VOID WE FILL ===================== -->
+  <section class="void" id="why">
+    <div class="wrap">
+      <div class="sec-eyebrow mono reveal"><span class="b">//</span> the void we fill</div>
+      <h2 class="sec-title reveal">Android has TiviMate. The desktop had nothing this good.</h2>
+      <p class="sec-sub reveal">Power users on Android reach for a fast, dense, pro-grade hub. On the desktop the choices were bloated consumer apps, half-abandoned open-source projects, or single-source players that can't unify IPTV, M3U, and local files. Source is built to end that.</p>
+
+      <div class="compare reveal">
+        <div class="col them">
+          <div class="col-h">the desktop, before</div>
+          <ul>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span>One source at a time — IPTV <b>or</b> M3U <b>or</b> local, never together.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Codecs that stall — no HEVC, no lossless audio, no Atmos.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Mouse-only menus, consumer chrome, telemetry you didn't ask for.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span>A live "guide" that's a flat channel list, if there's a guide at all.</span></li>
+          </ul>
+        </div>
+        <div class="col us">
+          <div class="col-h"><span class="dotp" aria-hidden="true"></span> with [source]</div>
+          <ul>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Every source, side by side</b> — Xtream, M3U, and local files in one explorer tree.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Bundled mpv engine</b> — HEVC / H.265, DTS-HD MA, TrueHD, Dolby Atmos, out of the box.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Keyboard-first, IDE-quiet</b> — a command palette, dense panes, zero tracking, runs local.</span></li>
+            <li><svg class="mk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>A real EPG grid</b> — scrolling now/next, channel logos, instant tune-in.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="sec-eyebrow mono reveal"><span class="b">//</span> what it does</div>
+      <h2 class="sec-title reveal">A pro tool that happens to play TV.</h2>
+      <p class="sec-sub reveal">Precise, dense, keyboard-friendly, visually refined — never a bloated consumer app.</p>
+      <div class="feat-grid reveal">
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M8 2l4 3 4-3"/></svg>
+          <h3>Live TV with a real guide</h3>
+          <p>A scrolling EPG grid with now/next, channel logos, favorites, and instant tune-in. Jump to "now" with one keystroke.</p>
+          <span class="tag"><span class="acc">XMLTV</span> · EPG · favorites</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="10" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/><rect x="14" y="13" width="7" height="8" rx="1.5"/></svg>
+          <h3>Movies &amp; shows, organized</h3>
+          <p>Your VOD library as a fast poster wall with categories, TMDB metadata pulled in automatically, and resume right where you left off.</p>
+          <span class="tag"><span class="acc">TMDB</span> · resume · categories</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><path d="M12 3v18M5 8v8M19 8v8M8.5 5v14M15.5 5v14"/></svg>
+          <h3>Plays what browsers can't</h3>
+          <p>A bundled mpv engine for HEVC / H.265, DTS-HD MA, Dolby TrueHD, and Atmos — the codecs a normal player just stalls on.</p>
+          <span class="tag"><span class="acc">mpv</span> · HEVC · lossless audio</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <h3>Cross-source search</h3>
+          <p>One search box across every playlist and your local disk. Find a title once, pick the best source to play it from.</p>
+          <span class="tag"><span class="acc">unified index</span> · source picker</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
+          <h3>Many sources, one window</h3>
+          <p>Multiple playlists open side by side in an explorer tree — like buffers in an editor. Swap, refresh, and favorite without losing your place.</p>
+          <span class="tag"><span class="acc">multi-playlist</span> · explorer · tabs</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18 4.5 4.5 0 0 1 0-9 4.5 4.5 0 0 0 0-9z"/></svg>
+          <h3>Eight themes, retinted live</h3>
+          <p>An editorial, IDE-quiet interface tuned in OKLCH. Navy, Obsidian, Play, Slate, Platinum, Gargoyle, Berry &amp; Lagoon — retint the whole app instantly.</p>
+          <span class="tag"><span class="acc">OKLCH</span> · keyboard-first</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><path d="M2 12a9 9 0 0 1 8 8"/><path d="M2 16a5 5 0 0 1 4 4"/><circle cx="2.5" cy="19.5" r=".5"/></svg>
+          <h3>Cast to the TV</h3>
+          <p>Send anything to a Chromecast or an AirPlay TV and drive it from the app. What the TV can't decode is transcoded on the fly, subtitles burned in.</p>
+          <span class="tag"><span class="acc">Chromecast</span> · AirPlay 2 · in-app remote</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M9 13l2.5 2.5L15 11"/></svg>
+          <h3>Your local library, too</h3>
+          <p>Point it at a folder or a NAS share. Files become titles with artwork and media info, episodes fold into shows, and playback resumes where you stopped.</p>
+          <span class="tag"><span class="acc">local folders</span> · NAS · thumbnails</span>
+        </div>
+        <div class="feat">
+          <svg class="fi" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="6" rx="1" fill="currentColor" stroke="none" opacity=".9"/></svg>
+          <h3>Picture-in-picture, native</h3>
+          <p>Pop the video out into a floating always-on-top mini player and keep browsing the guide or your library underneath it.</p>
+          <span class="tag"><span class="acc">PIP</span> · always on top · macOS + Windows</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CODEC STRIP ===================== -->
+  <section class="codec">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap codec-inner">
+      <div class="sec-eyebrow mono reveal"><span class="b">//</span> reference-grade playback</div>
+      <h2 class="sec-title reveal">If your file plays anywhere, it plays here.</h2>
+      <p class="sec-sub reveal">A real <span class="logo" style="font-size:inherit"><span class="b">[</span><span class="w">mpv</span><span class="b">]</span></span> engine ships in the box — the same decoder serious players are built on. No browser codec roulette.</p>
+      <div class="codec-row reveal">
+        <div class="chip"><span class="ck" aria-hidden="true"></span> HEVC / H.265</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> H.264 / AVC</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> AV1</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> 4K · UHD · HDR</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> DTS-HD MA</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> Dolby TrueHD</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> Dolby Atmos</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> multi-track audio</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> OpenSubtitles + SRT</div>
+        <div class="chip"><span class="ck" aria-hidden="true"></span> frame-step · screenshots</div>
+      </div>
+      <p class="codec-note">libmpv on both platforms · hardware decoding · smooth resize &amp; fullscreen · no browser codec roulette.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CLOSING ===================== -->
+  <section class="close" id="about">
+    <div class="wrap">
+      <h2 class="reveal">Bring your own playlist.<br>Press play.</h2>
+      <p class="reveal">No subscription, no account, no telemetry. <span class="logo" style="font-size:inherit"><span class="b">[</span><span class="w">source</span><span class="b">]</span></span> runs entirely on your machine and talks only to the provider you point it at.</p>
+      <div class="downloads reveal" style="margin-bottom:0">
+        <a class="dl primary" href="https://github.com/grant018/source-releases/releases/latest" data-dl="mac">
+          <svg class="os-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.36 12.78c-.02-2.05 1.67-3.03 1.75-3.08-.95-1.4-2.44-1.59-2.97-1.61-1.26-.13-2.47.74-3.11.74-.64 0-1.63-.72-2.69-.7-1.38.02-2.66.8-3.37 2.04-1.44 2.5-.37 6.2 1.03 8.23.68.99 1.5 2.1 2.56 2.06 1.03-.04 1.42-.66 2.66-.66 1.24 0 1.59.66 2.68.64 1.11-.02 1.81-1.01 2.49-2 .78-1.15 1.1-2.27 1.12-2.33-.02-.01-2.15-.83-2.18-3.27zM14.3 6.84c.56-.68.94-1.62.84-2.56-.81.03-1.79.54-2.37 1.22-.52.6-.98 1.56-.86 2.48.9.07 1.83-.46 2.39-1.14z"/></svg>
+          <span class="dl-txt"><span class="dl-k">Download for</span><span class="dl-v">macOS</span></span>
+          <span class="badge">Apple Silicon</span>
+        </a>
+        <a class="dl" href="https://github.com/grant018/source-releases/releases/latest" data-dl="win">
+          <svg class="os-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1l7.6-1.04v7.34H3zM11.42 3.94L21 2.6v8.8h-9.58zM3 12.6h7.6v7.34L3 18.9zM11.42 12.6H21v8.8l-9.58-1.34z"/></svg>
+          <span class="dl-txt"><span class="dl-k">Download for</span><span class="dl-v">Windows</span></span>
+          <span class="badge">10 / 11 · x64</span>
+        </a>
+      </div>
+      <p class="note"><b># note —</b> [source] ships no channels, streams, or content of any kind. It is a player only. Connect a service or playlist you already have the right to use.</p>
+    </div>
+  </section>
+
+  <!-- ===================== STATUSBAR FOOTER ===================== -->
+  <footer class="footer">
+    <div class="seg brand">[source]</div>
+    <div class="seg muted" id="ft-version">latest</div>
+    <div class="seg"><span class="dot-s"></span> macOS · Windows</div>
+    <a href="https://github.com/grant018/source-releases/releases" target="_blank" rel="noopener" class="seg muted">releases</a>
+    <a href="https://github.com/grant018/source-releases/blob/main/PRIVACY.md" target="_blank" rel="noopener" class="seg muted">privacy</a>
+    <a href="https://github.com/grant018/source-releases/blob/main/LICENSE" target="_blank" rel="noopener" class="seg muted">license</a>
+    <a href="https://github.com/grant018/source-releases/blob/main/THIRD-PARTY-LICENSES.md" target="_blank" rel="noopener" class="seg muted hide-sm">third-party</a>
+    <div class="sp"></div>
+    <div class="theme-switch" title="Preview a theme — the whole page (and the logo) retints">
+      <span class="tlabel">THEME</span>
+      <button class="sw on" data-sw="obsidian" title="Obsidian" aria-label="Obsidian theme"><i></i></button>
+      <button class="sw" data-sw="navy" title="Navy" aria-label="Navy theme"><i></i></button>
+      <button class="sw" data-sw="play" title="Play" aria-label="Play theme"><i></i></button>
+      <button class="sw" data-sw="slate" title="Slate" aria-label="Slate theme"><i></i></button>
+      <button class="sw" data-sw="platinum" title="Platinum" aria-label="Platinum theme"><i></i></button>
+      <button class="sw" data-sw="gargoyle" title="Gargoyle" aria-label="Gargoyle theme"><i></i></button>
+      <button class="sw" data-sw="berry" title="Berry" aria-label="Berry theme"><i></i></button>
+      <button class="sw" data-sw="lagoon" title="Lagoon" aria-label="Lagoon theme"><i></i></button>
+    </div>
+    <div class="seg muted hide-sm">local-first · no tracking</div>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (/[?&]og=1(&|$)/.test(location.search)) { document.documentElement.classList.add("og"); reduceMotion = true; }
+
+  /* ---- poster grid: composed, original cover art (no real/licensed imagery) ---- */
+  function tt(font, fs, title, bill){
+    var fam = font === "serif" ? "'DM Serif Display',serif" : "'Anton',sans-serif";
+    var cls = font === "serif" ? "tt serif" : "tt";
+    return '<div class="scrim-g"></div><div class="grain"></div><div class="vig"></div>' +
+      '<div class="ptitle"><div class="' + cls + '" style="font-family:' + fam + ';font-size:' + fs + 'cqw">' + title + '</div>' +
+      '<div class="bill">' + bill + '</div></div>';
+  }
+  var skyline =
+    '<div style="position:absolute;left:0;right:0;bottom:0;height:36%;display:flex;align-items:flex-end;gap:3%;padding:0 5%">' +
+    '<div style="flex:1;height:55%;background:#1b1322"></div>' +
+    '<div style="flex:1;height:82%;background:#160f1d"></div>' +
+    '<div style="flex:1;height:40%;background:#1b1322"></div>' +
+    '<div style="flex:1;height:95%;background:#120b18"></div>' +
+    '<div style="flex:1;height:62%;background:#1b1322"></div>' +
+    '<div style="flex:1;height:48%;background:#160f1d"></div>' +
+    '<div style="flex:1;height:78%;background:#120b18"></div></div>';
+
+  var posters = [
+    { title:"Arcadia Drift", sub:"2023 · Thriller", q:"4K", r:"8.4", font:"anton", fs:20, bill:"a night in motion",
+      layers:
+        '<div class="scene" style="background:linear-gradient(160deg,#0a1418,#103a44 55%,#06141a)"></div>' +
+        '<div style="position:absolute;left:36%;top:-12%;width:28%;height:124%;background:linear-gradient(180deg,rgba(150,228,238,0.30),rgba(150,228,238,0.02));filter:blur(6px)"></div>' +
+        '<div style="position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 11px,rgba(255,255,255,0.035) 11px 12px)"></div>' +
+        '<div style="position:absolute;left:0;right:0;bottom:0;height:34%;background:radial-gradient(60% 110% at 50% 120%,rgba(120,214,224,0.4),transparent 70%)"></div>' },
+    { title:"The Quiet Mile", sub:"2021 · Drama", q:"HD", r:"7.6", font:"serif", fs:17, bill:"a film by elin vå",
+      layers:
+        '<div class="scene" style="background:linear-gradient(180deg,#1a1530 0%,#5a2f4a 44%,#c97b54 70%,#eaa965 88%)"></div>' +
+        '<div style="position:absolute;left:50%;top:74%;width:30%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#ffe6c0,#f6b86a 72%);box-shadow:0 0 26px rgba(246,184,106,0.6)"></div>' +
+        '<div style="position:absolute;left:0;right:0;bottom:0;height:16%;background:#120c16"></div>' },
+    { title:"Hollow Crown", sub:"2024 · Action", q:"4K", r:"8.9", font:"anton", fs:20, bill:"the throne will fall",
+      layers:
+        '<div class="scene" style="background:radial-gradient(circle at 50% 30%,#7a5418,#1c1207 58%,#0a0805)"></div>' +
+        '<div style="position:absolute;left:50%;top:26%;width:62%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(244,213,138,0.35),transparent 66%)"></div>' },
+    { title:"Northwind", sub:"2022 · Adventure", q:"HD", r:"7.1", font:"anton", fs:24, bill:"north of everything",
+      layers:
+        '<div class="scene" style="background:linear-gradient(180deg,#16314a,#357488 60%,#bfe3e6)"></div>' +
+        '<div style="position:absolute;left:-12%;bottom:0;width:74%;height:46%;background:linear-gradient(160deg,#cfe9ec,#5e92a0);clip-path:polygon(0 100%,55% 0,100% 100%)"></div>' +
+        '<div style="position:absolute;right:-16%;bottom:0;width:82%;height:56%;background:linear-gradient(200deg,#eef8f9,#7fb0bb);clip-path:polygon(0 100%,50% 0,100% 100%)"></div>' },
+    { title:"Dune Walker", sub:"2023 · Sci-Fi", q:"4K", r:"8.5", font:"anton", fs:20, bill:"the sands remember",
+      layers:
+        '<div class="scene" style="background:linear-gradient(180deg,#2a1430 0%,#7a2f2a 38%,#d9742f 60%,#f0a85a 90%)"></div>' +
+        '<div style="position:absolute;left:50%;top:62%;width:50%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 50% 45%,#ffd9a0,#e8742a 70%);box-shadow:0 0 32px rgba(232,116,42,0.6)"></div>' +
+        '<div style="position:absolute;left:0;right:0;bottom:0;height:32%;background:linear-gradient(180deg,#3a160f,#160806);clip-path:polygon(0 38%,42% 14%,100% 46%,100% 100%,0 100%)"></div>' },
+    { title:"Paper Cities", sub:"2024 · Drama", q:"HD", r:"7.4", font:"serif", fs:18, bill:"everything we built",
+      layers:
+        '<div class="scene" style="background:linear-gradient(180deg,#241a2e,#4a3550 55%,#9a7f86)"></div>' +
+        '<div style="position:absolute;right:18%;top:15%;width:26%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f3ecf0,#b9a7b0);box-shadow:0 0 18px rgba(243,236,240,0.45)"></div>' +
+        skyline },
+    { title:"Vector", sub:"2020 · Action", q:"4K", r:"8.0", font:"anton", fs:28, bill:"no straight lines",
+      layers:
+        '<div class="scene" style="background:#0a0a0c"></div>' +
+        '<div style="position:absolute;inset:0;background:linear-gradient(122deg,#d11f31 0%,#7a0f1c 47%,transparent 47%)"></div>' +
+        '<div style="position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(122deg,transparent 46.4%,rgba(255,255,255,0.5) 47%,transparent 47.6%)"></div>' },
+    { title:"The Long Now", sub:"2022 · Documentary", q:"HD", r:"7.8", font:"serif", fs:18, bill:"a study in time",
+      layers:
+        '<div class="scene" style="background:linear-gradient(180deg,#0c2a24,#16564a 58%,#5fae8e)"></div>' +
+        '<div style="position:absolute;left:50%;top:58%;width:36%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(222,255,240,0.55),transparent 60%)"></div>' +
+        '<div style="position:absolute;left:0;right:0;top:58%;height:2px;background:rgba(222,255,240,0.5);box-shadow:0 0 14px rgba(160,240,210,0.7)"></div>' }
+  ];
+
+  var grid = document.getElementById("posterGrid");
+  if (grid) {
+    posters.forEach(function(p){
+      var el = document.createElement("div");
+      el.className = "poster";
+      el.innerHTML =
+        '<div class="art">' + p.layers + tt(p.font, p.fs, p.title, p.bill) +
+          '<span class="q">' + p.q + '</span>' +
+          '<span class="r">★ ' + p.r + '</span>' +
+        '</div>' +
+        '<div class="meta"><div class="t">' + p.title + '</div><div class="sub">' + p.sub + '</div></div>';
+      grid.appendChild(el);
+    });
+  }
+
+  /* ---- OS detection: reorder + mark the visitor's platform (both button rows) ---- */
+  var ua = navigator.userAgent;
+  var isWin = /Windows/i.test(ua);
+  function setYour(el){
+    if (!el) return;
+    el.classList.add("your-os");
+    var b = el.querySelector(".badge");
+    if (b && b.textContent.indexOf("your OS") === -1) b.textContent = b.textContent + " · your OS";
+  }
+  document.querySelectorAll(".downloads").forEach(function(row){
+    var mac = row.querySelector('[data-dl="mac"]');
+    var win = row.querySelector('[data-dl="win"]');
+    if (!mac || !win) return;
+    if (isWin) {
+      mac.classList.remove("primary");
+      win.classList.add("primary");
+      row.insertBefore(win, mac);
+      setYour(win);
+    } else {
+      setYour(mac);
+    }
+  });
+
+  /* ---- live download links: resolve the current release from GitHub.
+          Every button already points at the releases page (the no-JS / API-down
+          fallback); on success they become direct asset links + the version
+          chips fill in. api.github.com sends CORS headers and allows 60
+          anonymous requests per hour per visitor — plenty for one page. ---- */
+  (function resolveRelease(){
+    if (!window.fetch) return;
+    var api = "https://api.github.com/repos/grant018/source-releases/releases/latest";
+    fetch(api, { headers: { "Accept": "application/vnd.github+json" } })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rel){
+        if (!rel || !rel.assets) return;
+        var macAsset = null, winAsset = null;
+        rel.assets.forEach(function(a){
+          if (/\.dmg$/i.test(a.name)) macAsset = a;
+          else if (/-setup\.exe$/i.test(a.name)) winAsset = a;
+        });
+        function wire(sel, asset){
+          document.querySelectorAll(sel).forEach(function(el){
+            if (asset) { el.href = asset.browser_download_url; el.setAttribute("download", ""); }
+          });
+        }
+        wire('[data-dl="mac"]', macAsset);
+        wire('[data-dl="win"]', winAsset);
+        var ver = (rel.tag_name || "").replace(/^v/, "");
+        if (ver) {
+          var when = rel.published_at ? new Date(rel.published_at) : null;
+          var whenTxt = when ? when.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" }) : "";
+          var v = document.getElementById("dl-version");
+          if (v) v.textContent = "v" + ver + (whenTxt ? " · " + whenTxt : "");
+          var f = document.getElementById("ft-version");
+          if (f) f.textContent = "v" + ver;
+        }
+      })
+      .catch(function(){ /* keep the releases-page fallback */ });
+  })();
+
+  /* ---- live theme switch — retints the WHOLE page (and the logo) ---- */
+  var app = document.querySelector(".app");
+  var sbTheme = document.getElementById("sbTheme");
+  var sws = document.querySelectorAll(".sw");
+  var heroCycleStopped = false;
+  function applyTheme(name){
+    if (!app) return;
+    app.setAttribute("data-theme", name);
+    if (sbTheme) sbTheme.textContent = name;
+  }
+  sws.forEach(function(sw){
+    sw.addEventListener("click", function(){
+      heroCycleStopped = true;               // user took over; stop the auto-cycle
+      sws.forEach(function(s){ s.classList.remove("on"); });
+      sw.classList.add("on");
+      applyTheme(sw.getAttribute("data-sw"));
+    });
+  });
+
+  /* ---- HERO logo: gently auto-cycle the accent through every theme so the
+          "same mark, many colors" idea is felt on load. Stops on first
+          manual theme pick; disabled under reduced-motion. ---- */
+  if (!reduceMotion) {
+    var cycle = ["obsidian","navy","play","slate","platinum","gargoyle","berry","lagoon"];
+    var ci = 0;
+    setInterval(function(){
+      if (heroCycleStopped) return;
+      ci = (ci + 1) % cycle.length;
+      var name = cycle[ci];
+      applyTheme(name);
+      sws.forEach(function(s){ s.classList.toggle("on", s.getAttribute("data-sw") === name); });
+    }, 3200);
+  }
+
+  /* ---- scroll reveals — transform/opacity only, IntersectionObserver ---- */
+  if (!reduceMotion && "IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
+  }
+})();
+</script>
+</body>
+</html>
