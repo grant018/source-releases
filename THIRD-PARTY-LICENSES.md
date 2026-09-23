@@ -30,6 +30,28 @@ corresponding sources are also available on request — open an issue at
 | Inter font | SIL OFL 1.1 | <https://github.com/rsms/inter> |
 | JetBrains Mono font | SIL OFL 1.1 | <https://github.com/JetBrains/JetBrainsMono> |
 | Open Sans font | SIL OFL 1.1 | <https://github.com/googlefonts/opensans> |
+| IBM Plex Sans + IBM Plex Mono fonts | SIL OFL 1.1 | <https://github.com/IBM/plex> |
+| Space Grotesk font | SIL OFL 1.1 | <https://github.com/floriankarsten/space-grotesk> |
+| Space Mono font | SIL OFL 1.1 | <https://github.com/googlefonts/spacemono> |
+| Atkinson Hyperlegible font | SIL OFL 1.1 | <https://www.brailleinstitute.org/freefont/> |
+| Fira Code font | SIL OFL 1.1 | <https://github.com/tonsky/FiraCode> |
+| Cascadia Code font | SIL OFL 1.1 | <https://github.com/microsoft/cascadia-code> |
+| Geist + Geist Mono fonts | SIL OFL 1.1 | <https://github.com/vercel/geist-font> |
+| Instrument Sans font | SIL OFL 1.1 | <https://github.com/Instrument/instrument-sans> |
+| Figtree font | SIL OFL 1.1 | <https://github.com/erikdkennedy/figtree> |
+| Manrope font | SIL OFL 1.1 | <https://github.com/sharanda/manrope> |
+| Rubik font | SIL OFL 1.1 | <https://github.com/googlefonts/rubik> |
+| Lexend font | SIL OFL 1.1 | <https://github.com/googlefonts/lexend> |
+| Chakra Petch font | SIL OFL 1.1 | <https://github.com/cadsondemak/Chakra-Petch> |
+| Oxanium font | SIL OFL 1.1 | <https://github.com/sevmeyer/oxanium> |
+| DM Mono font | SIL OFL 1.1 | <https://github.com/googlefonts/dm-mono> |
+| Source Code Pro font | SIL OFL 1.1 | <https://github.com/adobe-fonts/source-code-pro> |
+| Martian Mono font | SIL OFL 1.1 | <https://github.com/evilmartians/mono> |
+| Victor Mono font | SIL OFL 1.1 | <https://github.com/rubjo/victor-mono> |
+| Recursive font | SIL OFL 1.1 | <https://github.com/arrowtype/recursive> |
+| Kode Mono font | SIL OFL 1.1 | <https://github.com/isaozler/kode-mono> |
+| Share Tech Mono font | SIL OFL 1.1 | <https://fonts.google.com/specimen/Share+Tech+Mono> |
+| VT323 font | SIL OFL 1.1 | <https://github.com/phoikoi/VT323> |
 | TMDB logo | TMDB brand asset, used per TMDB attribution requirements | <https://www.themoviedb.org/about/logos-attribution> |
 
 ## Media engine — Windows (LGPL build)
